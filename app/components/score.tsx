@@ -6,10 +6,12 @@ export default function Score({ score }: { score: number }) {
     setS(score + 1);
   }
   return (
-    <div className="bg-gray w-[70px] rounded-md flex justify-around">
-      <button onClick={increase}>+</button>
-      {s}
-      <button>-</button>
+    <div className="w-[70px] p-1 rounded-md flex justify-around items-center bg-light-gray">
+      <button className=" text-light-grayish-blue" onClick={increase}>
+        +
+      </button>
+      <b className="text-sm text-moderate-blue">{s}</b>
+      <button className="text-light-grayish-blue">-</button>
     </div>
   );
 }

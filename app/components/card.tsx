@@ -1,13 +1,20 @@
+import { useEffect } from "react";
+import { useState } from "react";
 import Score from "./score";
 
-export default function Card({ comment }: { comment: any }) {
-  console.log(comment);
+export default function Card({ comment, reply }: { comment: any; reply: any }) {
+  const [user, setUser] = useState({} as any);
+
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem("user") as string));
+  }, []);
+
   return (
     <>
       {comment.id ? (
         <div>
           <div className=" bg-white mb-4 p-5 text-black rounded-xl shadow-md">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <img
                 width="30"
                 height="30"
@@ -15,7 +22,14 @@ export default function Card({ comment }: { comment: any }) {
                 alt="avatar"
               />
               <b>{comment.user.username}</b>
-              <span className=" text-sm">{comment.createdAt}</span>
+              {user.username === comment.user.username && (
+                <div className="text-[8px] px-1 bg-primary text-white  font-bold mr-2">
+                  You
+                </div>
+              )}
+              <span className=" text-sm text-grayish-blue">
+                {comment.createdAt}
+              </span>
             </div>
 
             <div className="text-sm mt-3">
@@ -24,14 +38,25 @@ export default function Card({ comment }: { comment: any }) {
                   @{comment.replyingTo}
                 </span>
               )}
-              {comment.content}
+              <span className=" text-grayish-blue">{comment.content}</span>
             </div>
 
             <div className="flex justify-between mt-3">
               <Score score={comment.score}></Score>
-              <a className="text-sm text-primary font-bold" href="">
-                Replay
-              </a>
+
+              <div>
+                {user.username === comment.user.username && (
+                  <a className="text-sm text-pale-red font-bold mr-2" href="">
+                    Delete
+                  </a>
+                )}
+                <button
+                  className="text-sm text-primary font-bold"
+                  onClick={() => reply(comment)}
+                >
+                  Replay
+                </button>
+              </div>
             </div>
           </div>
           {comment.replies &&
@@ -39,7 +64,11 @@ export default function Card({ comment }: { comment: any }) {
               return (
                 <>
                   <div className="ml-5">
-                    <Card comment={replay}></Card>
+                    <Card
+                      key={comment.id}
+                      comment={replay}
+                      reply={reply}
+                    ></Card>
                   </div>
                 </>
               );
