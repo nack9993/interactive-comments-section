@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import data from "../public/data.json";
 import Card from "./components/card";
+import CommentField from "./components/commentField";
 
 interface User {
   username: string;
@@ -15,11 +16,11 @@ interface User {
 export default function Comments() {
   const [comments, setComments] = useState([] as any);
   const [currentComment, setCurrentComment] = useState(null as any);
-  const [text, setText] = useState("");
+  const [mainComment, setMainComment] = useState(null as any);
   const [user, setUser] = useState({} as User);
+  const [isEdit, setIsEdit] = useState(false as Boolean);
 
   useEffect(() => {
-    console.log(data.comments);
     setComments([...comments, ...data.comments]);
 
     setUser(data.currentUser);
@@ -27,75 +28,116 @@ export default function Comments() {
     localStorage.setItem("user", JSON.stringify(data.currentUser));
   }, []);
 
-  function replyComment(comment: any) {
-    setCurrentComment(comment);
+  function replyComment(comment: any, main: any) {
+    console.log(comment);
+    if (main) {
+      // Is reply comment
+      setCurrentComment(comment);
+      setMainComment(main);
+    } else {
+      setCurrentComment(comment);
+    }
   }
 
-  function sendComment() {
-    const foundIndex = comments.findIndex(
-      (x: any) => x.id == currentComment.id
-    );
+  function editComment(comment: any, main: any) {
+    if (main) {
+      setMainComment(main);
+    }
+    setCurrentComment(comment);
+    setIsEdit(true);
+  }
+
+  function sendComment(text: any) {
+    // Main comment
+    let foundIndex, childIndex;
+    if (!currentComment.replyingTo) {
+      foundIndex = comments.findIndex((x: any) => x.id == currentComment.id);
+    } else {
+      foundIndex = comments.findIndex((x: any) => x.id == mainComment.id);
+
+      childIndex = comments[foundIndex].replies.findIndex(
+        (x: any) => x.id == currentComment.id
+      );
+    }
 
     const newComments = [...comments];
 
-    console.log(newComments[foundIndex]);
     const mock = {
       id: 3,
-      content:
-        "If you're still new, I'd recommend focusing on the fundamentals of HTML, CSS, and JS before considering React. It's very tempting to jump ahead but lay a solid foundation first.",
+      content: text,
       createdAt: "1 week ago",
-      score: 4,
-      replyingTo: "maxblagun",
+      score: 0,
+      replyingTo: currentComment.user.username,
       user: {
-        image: {
-          png: "./images/avatars/image-ramsesmiron.png",
-          webp: "./images/avatars/image-ramsesmiron.webp",
-        },
-        username: "ramsesmiron",
+        image: user.image,
+        username: user.username,
       },
       replies: [],
     };
 
-    newComments[foundIndex].replies = [mock];
+    if (!currentComment.replyingTo) {
+      newComments[foundIndex].replies = [
+        ...newComments[foundIndex].replies,
+        ...[mock],
+      ];
+    } else {
+      if (!newComments[foundIndex].replies[childIndex].replies) {
+        newComments[foundIndex].replies[childIndex].replies = [];
+      }
+      newComments[foundIndex].replies[childIndex].replies = [
+        ...newComments[foundIndex].replies[childIndex].replies,
+        ...[mock],
+      ];
+    }
+
     setComments([...newComments]);
+    setCurrentComment(null);
+
+    window.scroll(0, 0);
   }
 
-  function fieldText(e: any) {
-    setText(e);
+  function updateComment(text: String) {
+    console.log(currentComment);
+    console.log(mainComment);
+    // Main comment
+    let foundIndex, childIndex;
+    if (!currentComment.replyingTo) {
+      foundIndex = comments.findIndex((x: any) => x.id == currentComment.id);
+    } else {
+      foundIndex = comments.findIndex((x: any) => x.id == mainComment.id);
+
+      childIndex = comments[foundIndex].replies.findIndex(
+        (x: any) => x.id == currentComment.id
+      );
+    }
+
+    const newComments = [...comments];
+    console.log(newComments);
+    console.log(foundIndex, childIndex);
+
+    newComments[foundIndex].replies[childIndex].content = text;
+
+    setComments([...newComments]);
+
+    setIsEdit(false);
+    setCurrentComment(null);
   }
 
   return (
     <div className="max-w-[660px]">
       {comments.map((comment: any) => (
-        <Card key={comment.id} comment={comment} reply={replyComment} />
+        <Card
+          key={`comment-${comment.id}-${Math.random()}`}
+          main={mainComment}
+          comment={comment}
+          reply={replyComment}
+          editComment={editComment}
+          sendComment={sendComment}
+          currentComment={currentComment}
+          updateComment={updateComment}
+          isEdit={isEdit}
+        />
       ))}
-      {currentComment && (
-        <div className="bg-white mb-4 p-5 text-black rounded-xl shadow-md">
-          <textarea
-            value={text}
-            placeholder="Add comment..."
-            className="border p-5 border-light-gray rounded-lg  h-[120px] w-full"
-            onInput={(e: any) => fieldText(e.target.value)}
-          />
-          <div className="flex justify-between items-center mt-3">
-            <div>
-              <img
-                width="40"
-                height="40"
-                src={user.image && user.image.png}
-                alt="avatar"
-              />
-            </div>
-
-            <button
-              className="px-7 py-4 text-lg font-bold bg-primary text-white rounded-md"
-              onClick={() => sendComment()}
-            >
-              SEND
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
