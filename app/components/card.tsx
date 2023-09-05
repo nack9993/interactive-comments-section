@@ -11,15 +11,19 @@ export default function Card({
   sendComment,
   currentComment,
   updateComment,
+  deleteComment,
+  parentComment,
   isEdit,
 }: {
   comment: any;
   reply: any;
   main: any;
+  parentComment: any;
   editComment: any;
   sendComment: any;
   currentComment: any;
   updateComment: any;
+  deleteComment: any;
   isEdit: any;
 }) {
   const [user, setUser] = useState({} as any);
@@ -36,6 +40,10 @@ export default function Card({
 
   function setEditComment(comment: any, main: any) {
     editComment(comment, main);
+  }
+
+  function setDeleteComment(comment: any, main: any, parentComment: any) {
+    deleteComment(comment, main, parentComment);
   }
 
   return (
@@ -67,9 +75,9 @@ export default function Card({
                   @{comment.replyingTo}
                 </span>
               )}
-              {!isEdit ? (
-                <span className=" text-grayish-blue">{comment.content}</span>
-              ) : (
+
+              <span className=" text-grayish-blue">{comment.content}</span>
+              {isEdit &&
                 currentComment.id === comment.id &&
                 currentComment.user.username === user.username && (
                   <>
@@ -79,15 +87,8 @@ export default function Card({
                       className="border p-5 border-light-gray rounded-lg  h-[120px] w-full"
                       onInput={(e: any) => fieldText(e.target.value)}
                     />
-                    <button
-                      className="text-sm text-primary font-bold"
-                      onClick={() => updateComment(text)}
-                    >
-                      Update
-                    </button>
                   </>
-                )
-              )}
+                )}
             </div>
 
             <div className="flex justify-between mt-3">
@@ -95,17 +96,31 @@ export default function Card({
 
               <div>
                 {user.username === comment.user.username ? (
-                  <>
-                    <a className="text-sm text-soft-red font-bold mr-2" href="">
-                      Delete
-                    </a>
+                  !isEdit ? (
+                    <>
+                      <a
+                        className="text-sm text-soft-red font-bold mr-2 cursor-pointer"
+                        onClick={() =>
+                          setDeleteComment(comment, main, parentComment)
+                        }
+                      >
+                        Delete
+                      </a>
+                      <button
+                        className="text-sm text-primary font-bold cursor-pointer"
+                        onClick={() => setEditComment(comment, main)}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  ) : (
                     <button
-                      className="text-sm text-primary font-bold"
-                      onClick={() => setEditComment(comment, main)}
+                      className="text-sm text-white font-bold border p-3 bg-primary rounded-xl cursor-pointer"
+                      onClick={() => updateComment(text)}
                     >
-                      Edit
+                      Update
                     </button>
-                  </>
+                  )
                 ) : (
                   <button
                     className="text-sm text-primary font-bold"
@@ -133,10 +148,12 @@ export default function Card({
                     main={comment}
                     comment={replay}
                     reply={reply}
+                    parentComment={parentComment}
                     editComment={editComment}
                     currentComment={currentComment}
                     sendComment={sendComment}
                     updateComment={updateComment}
+                    deleteComment={deleteComment}
                     isEdit={isEdit}
                   ></Card>
                 </div>
