@@ -76,7 +76,7 @@ export default function Comments() {
             mainIndex = index;
 
             const newComment = newComments[parentIndex].replies.filter(
-              (_, index: Number) => {
+              (c: any, index: Number) => {
                 return index !== mainIndex;
               }
             );
@@ -210,7 +210,7 @@ export default function Comments() {
     const newComments = [...comments];
 
     const newComment = newComments[foundIndex].replies.filter(
-      (_, index: Number) => {
+      (c: any, index: Number) => {
         return index !== childIndex;
       }
     );
