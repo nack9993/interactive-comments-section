@@ -98,7 +98,7 @@ export default function Comments() {
 
             const newComment = newComments[parentIndex].replies[
               i
-            ].replies.filter((_, index: Number) => {
+            ].replies.filter((reply: any, index: Number) => {
               return index !== mainIndex;
             });
             newComments[parentIndex].replies[i].replies = newComment;
@@ -118,11 +118,14 @@ export default function Comments() {
   function sendComment(text: any) {
     // Main comment
     let foundIndex, childIndex;
-    if (!currentComment.replyingTo) {
-      foundIndex = comments.findIndex((x: any) => x.id == currentComment.id);
-    } else {
-      foundIndex = comments.findIndex((x: any) => x.id == mainComment.id);
 
+    foundIndex = comments.findIndex(
+      (x: any) =>
+        x.id ==
+        (!currentComment.replyingTo ? currentComment.id : mainComment.id)
+    );
+
+    if (!currentComment.replyingTo) {
       childIndex = comments[foundIndex].replies.findIndex(
         (x: any) => x.id == currentComment.id
       );
@@ -161,8 +164,6 @@ export default function Comments() {
         ...newComments[foundIndex].replies[childIndex].replies,
         ...[mock],
       ];
-
-      console.log(newComments[foundIndex].replies[childIndex]);
     }
 
     setComments([...newComments]);
@@ -198,11 +199,7 @@ export default function Comments() {
     // Main comment
     let foundIndex, childIndex: any;
 
-    console.log(mainComment);
-
     foundIndex = comments.findIndex((x: any) => x.id == mainComment.id);
-
-    console.log(comments[foundIndex]);
 
     childIndex = comments[foundIndex].replies.findIndex(
       (childComment: any) =>
